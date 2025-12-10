@@ -12,7 +12,10 @@ app.use(express.json());
 
 //MongoDB verbinding
 mongoose
-    .connect(process.env.MONGO_URL, {useNewUrlParser: true })
+    .connect(process.env.MONGO_URL, {
+        useNewUrlParser: true, 
+        useUnifiedTopology: true,
+    })
     .then(() => { console.log("MongoDB verbonden"); })
     .catch((err) => { console.error("MongoDB verbindingsfout:", err); });
 
@@ -30,7 +33,7 @@ app.get('/bag', async (req, res) => {
 
 //Nieuwe bag toevoegen
 app.post('/bag', async (req, res) => {
-    try{
+    try {
         const nieuwItem = await Config.create(req.body);
         res.json(nieuwItem);
     } catch (err) {
@@ -42,12 +45,15 @@ app.post('/bag', async (req, res) => {
 app.delete('/bag/:id', async (req, res) => {
     try {
         const verwijderdItem = await Config.findByIdAndDelete(req.params.id);
+        if(!verwijderdItem) {
+            return res.status(404).json({ message: 'Item niet gevonden' });
+        }
         res.json({ message: 'Item verwijderd', item: verwijderdItem });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
-    
+
 
 app.listen(port, () => {
     console.log(`Server draait op poort ${port}`);
