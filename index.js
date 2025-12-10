@@ -12,7 +12,7 @@ app.use(express.json());
 
 //MongoDB verbinding
 mongoose
-    .connect(process.env.MONGODB_URL, {useNewUrlParser: true })
+    .connect(process.env.MONGO_URL, {useNewUrlParser: true })
     .then(() => { console.log("MongoDB verbonden"); })
     .catch((err) => { console.error("MongoDB verbindingsfout:", err); });
 
