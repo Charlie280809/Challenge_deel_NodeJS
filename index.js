@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const Config = require("./models/config");
+const config = require('config');
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -11,13 +12,22 @@ app.use(cors());
 app.use(express.json());
 
 //MongoDB verbinding
-mongoose
-    .connect(process.env.MONGO_URL, {
-        useNewUrlParser: true, 
-        useUnifiedTopology: true,
-    })
-    .then(() => { console.log("MongoDB verbonden"); })
-    .catch((err) => { console.error("MongoDB verbindingsfout:", err); });
+// const dbUri = process.env.MONGO_URI || config.get('db.uri');
+// const dbOptions = config.has('db.options') ? config.get('db.options') : {};
+// console.log(dbUri);
+// mongoose.connect(dbUri, dbOptions)
+//     .then(() => { console.log(`connected to ${dbUri}`); })
+//     .catch((err) => { 
+//         console.error("MongoDB verbindingsfout:", err); 
+//         process.exit(1);
+//     });
+const dbUri = process.env.MONGO_URI;
+mongoose.connect(dbUri)
+    .then(() => { console.log(`connected to ${dbUri}`); })
+    .catch((err) => { 
+        console.error("MongoDB verbindingsfout:", err); 
+        process.exit(1);
+    });
 
 
 //Alle bags ophalen
@@ -56,5 +66,5 @@ app.delete('/bag/:id', async (req, res) => {
 
 
 app.listen(port, () => {
-    console.log(`Server draait op poort ${port}`);
+    console.log(`Server draait op poort ${port}!!`);
 });
