@@ -1,18 +1,18 @@
 const mongoose = require('mongoose');
 
 const configSchema = new mongoose.Schema({
-    naam: {
+    name: {
         type: String,
         required: true
     },
-    kleur: {
+    color: {
         type: String,
     },
-    smaak: {
+    flavor: {
         type: String,
         required: true
     },
-    datum: {
+    date: {
         type: Date,
         default: Date.now
     }
