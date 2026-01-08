@@ -18,13 +18,13 @@ app.use(cors());
 app.use(express.json());
 
 //MongoDB verbinding
-const dbUri = process.env.MONGO_URI;
-if (!dbUri) {
-    console.error("Missing MONGO_URI environment variable. Set it and redeploy.");
+const dbUrl = process.env.MONGO_URL;
+if (!dbUrl) {
+    console.error("Missing MONGO_URL environment variable. Set it and redeploy.");
     process.exit(1);
 }
-mongoose.connect(dbUri)
-    .then(() => { console.log(`connected to ${dbUri}`); })
+mongoose.connect(dbUrl)
+    .then(() => { console.log(`connected to ${dbUrl}`); })
     .catch((err) => {
         console.error("MongoDB verbindingsfout:", err);
         process.exit(1);
