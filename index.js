@@ -2,7 +2,14 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const Config = require("./models/config");
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+
+const Bag = require('./models/Bag')
+const User = require('./models/User')
+const auth = require('./middleware/auth')
+
+// const Config = require("./models/config");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -18,47 +25,70 @@ if (!dbUri) {
 }
 mongoose.connect(dbUri)
     .then(() => { console.log(`connected to ${dbUri}`); })
-    .catch((err) => { 
-        console.error("MongoDB verbindingsfout:", err); 
+    .catch((err) => {
+        console.error("MongoDB verbindingsfout:", err);
         process.exit(1);
     });
 
 
 //Alle bags ophalen
-app.get('/bag', async (req, res) => {
-    try {
-        const items = await Config.find();
-        res.json(items);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
+app.get('/api/v1/bag', async (req, res) => {
+    const bags = await Bag.find()
+    res.json(bags)
+})
 
 
 //Nieuwe bag toevoegen
-app.post('/bag', async (req, res) => {
-    try {
-        const nieuwItem = await Config.create(req.body);
-        res.json(nieuwItem);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
+app.post('/api/v1/bag', auth, async (req, res) => {
+    const bag = await Bag.create(req.body)
+    res.json(bag)
+})
 
 //Bag verwijderen op id
-app.delete('/bag/:id', async (req, res) => {
+app.delete('/api/v1/bag/:id', auth, async (req, res) => {
+    if (req.user.role !== 'admin') return res.sendStatus(403)
+    await Bag.findByIdAndDelete(req.params.id)
+    res.sendStatus(204)
+})
+
+//Nieuwe user registreren
+app.post('/api/v1/user', async (req, res) => {
+    const hashed = await bcrypt.hash(req.body.password, 10)
+    const user = await User.create({ ...req.body, password: hashed })
+    res.json(user)
+})
+
+//User login
+app.post('/api/v1/user/auth', async (req, res) => {
+    const user = await User.findOne({ email: req.body.email })
+    if (!user) return res.sendStatus(401)
+
+    const ok = await bcrypt.compare(req.body.password, user.password)
+    if (!ok) return res.sendStatus(401)
+
+    const token = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET
+    )
+
+    res.json({ token })
+})
+
+async function start() {
     try {
-        const verwijderdItem = await Config.findByIdAndDelete(req.params.id);
-        if(!verwijderdItem) {
-            return res.status(404).json({ message: 'Item niet gevonden' });
-        }
-        res.json({ message: 'Item verwijderd', item: verwijderdItem });
+        await mongoose.connect(process.env.MONGO_URL)
+        console.log('Mongo connected')
+
+        app.listen(port, () => {
+            console.log(`API running on port ${port}`)
+        })
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        console.error(err)
     }
-});
+}
 
+start()
 
-app.listen(port, () => {
-    console.log(`Server draait op poort ${port}!!`);
-});
+// app.listen(port, () => {
+//     console.log(`Server draait op poort ${port}!!`);
+// });
