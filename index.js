@@ -12,16 +12,11 @@ app.use(cors());
 app.use(express.json());
 
 //MongoDB verbinding
-// const dbUri = process.env.MONGO_URI || config.get('db.uri');
-// const dbOptions = config.has('db.options') ? config.get('db.options') : {};
-// console.log(dbUri);
-// mongoose.connect(dbUri, dbOptions)
-//     .then(() => { console.log(`connected to ${dbUri}`); })
-//     .catch((err) => { 
-//         console.error("MongoDB verbindingsfout:", err); 
-//         process.exit(1);
-//     });
 const dbUri = process.env.MONGO_URI;
+if (!dbUri) {
+    console.error("Missing MONGO_URI environment variable. Set it and redeploy.");
+    process.exit(1);
+}
 mongoose.connect(dbUri)
     .then(() => { console.log(`connected to ${dbUri}`); })
     .catch((err) => { 
