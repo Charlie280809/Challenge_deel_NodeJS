@@ -3,7 +3,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const Config = require("./models/config");
-const config = require('config');
 const app = express();
 const port = process.env.PORT || 3000;
 
